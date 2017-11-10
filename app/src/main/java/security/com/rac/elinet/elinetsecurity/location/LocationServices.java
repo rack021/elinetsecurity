@@ -11,7 +11,7 @@ import android.util.Log;
  * Created by rac on 5/28/17.
  */
 
-public class LocationServices extends Service  {
+public class LocationServices extends Service {
     private static final String TAG = "ElentGPSLocationService";
     private LocationManager mLocationManager = null;
     private ElientLocationListener mLocationListener = null;
@@ -37,7 +37,7 @@ public class LocationServices extends Service  {
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager - LOCATION_INTERVAL: "+ LOCATION_INTERVAL + " LOCATION_DISTANCE: " + LOCATION_DISTANCE);
+        Log.e(TAG, "initializeLocationManager - LOCATION_INTERVAL: " + LOCATION_INTERVAL + " LOCATION_DISTANCE: " + LOCATION_DISTANCE);
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
