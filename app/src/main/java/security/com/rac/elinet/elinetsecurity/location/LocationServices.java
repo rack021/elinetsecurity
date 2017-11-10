@@ -21,7 +21,7 @@ public class LocationServices extends Service {
     @Override
     public void onCreate() {
         try {
-            mLocationListener = new ElientLocationListener();
+            mLocationListener = new ElientLocationListener(this);
             initializeLocationManager();
             mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,

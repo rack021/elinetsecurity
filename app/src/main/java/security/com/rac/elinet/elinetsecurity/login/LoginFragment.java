@@ -1,5 +1,7 @@
 package security.com.rac.elinet.elinetsecurity.login;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,10 +16,12 @@ import android.widget.TextView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.pixplicity.easyprefs.library.Prefs;
 
 import java.io.IOException;
 import java.util.Locale;
 
+import security.com.rac.elinet.elinetsecurity.MainActivity;
 import security.com.rac.elinet.elinetsecurity.R;
 import security.com.rac.elinet.elinetsecurity.Util.DeviceUtil;
 import security.com.rac.elinet.elinetsecurity.login.model.Device;
@@ -31,9 +35,11 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     Button loging_btn;
     EditText otp;
     String TAG = "LoginFragment";
+    Context context;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.loginlayout, container, false);
+        context = getContext();
         errror_display = (TextView) view.findViewById(R.id.error_msg);
         loging_btn = (Button) view.findViewById(R.id.login_btn);
         otp = (EditText) view.findViewById(R.id.otp);
@@ -75,7 +81,10 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             if (s != null) {
                 try {
                     Device device = mapper.readValue(s, Device.class);
-                    Log.d(TAG, device.getToken());
+                    Prefs.putString("server_token", device.getToken());
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    startActivity(intent);
+                    getActivity().finish();
                 } catch (IOException e) {
                     e.printStackTrace();
                     errror_display.setText(e.getMessage());
