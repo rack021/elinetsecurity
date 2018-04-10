@@ -10,7 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 public class CameraClickThread extends Thread {
     private Context context;
-    private long clickInterval = 2000;
+    private long clickInterval = 5000;
 
     public CameraClickThread(Context context) {
         this.context = context;

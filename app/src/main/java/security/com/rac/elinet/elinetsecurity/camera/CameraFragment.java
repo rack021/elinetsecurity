@@ -17,6 +17,9 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
@@ -26,6 +29,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -51,8 +55,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import im.delight.android.location.SimpleLocation;
 import security.com.rac.elinet.elinetsecurity.MainActivity;
 import security.com.rac.elinet.elinetsecurity.R;
+import security.com.rac.elinet.elinetsecurity.Util.Utility;
+import security.com.rac.elinet.elinetsecurity.db.EsnDBHelper;
+import security.com.rac.elinet.elinetsecurity.location.LocationServices;
 
 /**
  * Created by rac on 7/2/17.
@@ -157,9 +165,9 @@ public class CameraFragment extends Fragment {
             } finally {
                 mImage.close();
 
-                Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
-//                sendBroadcast(mediaStoreUpdateIntent);
+                Intent mediaStoreUpdateIntent = new Intent("camera-save-event");
+                mediaStoreUpdateIntent.putExtra("img_name", mImageFileName);
+                LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(mediaStoreUpdateIntent);
 
                 if (fileOutputStream != null) {
                     try {
@@ -213,9 +221,13 @@ public class CameraFragment extends Fragment {
         ORIENTATIONS.append(Surface.ROTATION_270, 270);
     }
 
+    LocationManager mLocationManager;
+    EsnDBHelper db;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         createImageFolder();
+        db = new EsnDBHelper(getActivity().getApplicationContext());
         View view = inflater.inflate(R.layout.camera_layout, container, false);
         display = (TextView) view.findViewById(R.id.display);
         textureView = (TextureView) view.findViewById(R.id.textureview);
@@ -223,8 +235,10 @@ public class CameraFragment extends Fragment {
         CameraClickThread thread = new CameraClickThread(getActivity());
         thread.start();
 
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiverCameraClick,
                 new IntentFilter("camera-click-event"));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiverCameraSaver,
+                new IntentFilter("camera-save-event"));
         return view;
     }
 
@@ -435,11 +449,57 @@ public class CameraFragment extends Fragment {
         }
     }
 
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    private Location getLastKnownLocation() {
+        mLocationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
+    }
+
+    private void saveRecordToDb(String imgUrl, Location location) {
+        Log.d("saveRecordToDb", imgUrl);
+        Integer battery = Utility.getCurrentBattery(getActivity());
+        db.insertRecording(imgUrl, location.getLatitude(), location.getLongitude(), battery.toString());
+    }
+
+    private BroadcastReceiver mMessageReceiverCameraSaver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            try {
+                String imgUrl = intent.getStringExtra("img_name");
+                Location location = getLastKnownLocation();
+                if (location != null) {
+                    String longitude = String.valueOf(location.getLongitude());
+                    String latitude = String.valueOf(location.getLatitude());
+                    display.setText("changed Loc : " + longitude + ":" + latitude);
+                    saveRecordToDb(imgUrl, location);
+                } else {
+                    display.setText("changed Loc : ");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private BroadcastReceiver mMessageReceiverCameraClick = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, Intent intent) {
             try {
                 lockFocus();
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -449,7 +509,8 @@ public class CameraFragment extends Fragment {
     @Override
     public void onDestroy() {
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiverCameraClick);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiverCameraSaver);
         super.onDestroy();
     }
 

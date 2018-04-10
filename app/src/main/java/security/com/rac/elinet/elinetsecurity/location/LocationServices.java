@@ -14,17 +14,26 @@ import security.com.rac.elinet.elinetsecurity.camera.CameraClickThread;
  */
 
 public class LocationServices extends Service {
+    private static LocationServices locationServicesInstance;
     private static final String TAG = "ElentGPSLocationService";
     private LocationManager mLocationManager = null;
     private ElientLocationListener mLocationListener = null;
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 10f;
 
+    public static LocationServices getInstance() {
+        if (locationServicesInstance == null) { //if there is no instance available... create new one
+            locationServicesInstance = new LocationServices();
+        }
+
+        return locationServicesInstance;
+    }
+
     @Override
     public void onCreate() {
         try {
 
-            mLocationListener = new ElientLocationListener(this);
+            mLocationListener = new ElientLocationListener(getApplicationContext());
             initializeLocationManager();
             mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
@@ -43,6 +52,10 @@ public class LocationServices extends Service {
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "network provider does not exist, " + ex.getMessage());
         }
+    }
+
+    public LocationManager getmLocationManager() {
+        return mLocationManager;
     }
 
     private void initializeLocationManager() {

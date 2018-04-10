@@ -22,6 +22,7 @@ import security.com.rac.elinet.elinetsecurity.camera.CameraFragment;
 import security.com.rac.elinet.elinetsecurity.db.EsnDBHelper;
 import security.com.rac.elinet.elinetsecurity.location.LocationServices;
 import security.com.rac.elinet.elinetsecurity.login.LoginFragment;
+import security.com.rac.elinet.elinetsecurity.service.EsnService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,13 +47,24 @@ public class MainActivity extends AppCompatActivity {
                         .add(R.id.container, new LoginFragment(), "LOGIN_FRAGMENT")
                         .commit();
             } else {
+                startService(new Intent(this, LocationServices.class));
+                launchEsnService();
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.container, new CameraFragment(), "CAMERA_FRAGMENT")
                         .commit();
-                startService(new Intent(this, LocationServices.class));
+
             }
         }
 
+    }
+
+    public void launchEsnService() {
+        // Construct our Intent specifying the Service
+        Intent i = new Intent(this, EsnService.class);
+        // Add extras to the bundle
+        i.putExtra("foo", "bar");
+        // Start the service
+        startService(i);
     }
 
     @Override
