@@ -13,7 +13,7 @@ import security.com.rac.elinet.elinetsecurity.Util.Utility;
 
 public class EsnDBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "Ens.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String RECORDING_TABLE_NAME = "recording";
     public static final String RECORDING_COLUMN_ID = "_id";
     public static final String RECORDING_COLUMN_IMG = "img";
@@ -26,8 +26,8 @@ public class EsnDBHelper extends SQLiteOpenHelper {
             + RECORDING_TABLE_NAME + "(" + RECORDING_COLUMN_ID + " INTEGER PRIMARY KEY,"
             + RECORDING_COLUMN_IMG + " TEXT,"
             + RECORDING_COLUMN_lat + " TEXT,"
-            + RECORDING_COLUMN_LON + " TEXT"
-            + RECORDING_COLUMN_BATTERY + " TEXT"
+            + RECORDING_COLUMN_LON + " TEXT,"
+            + RECORDING_COLUMN_BATTERY + " TEXT,"
             + CREATED_AT + " DATETIME"
             + ")";
 
@@ -46,14 +46,15 @@ public class EsnDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertRecording(String img, String lat, String lon, String battery) {
+    public boolean insertRecording(String img, Double lat, Double lon, String battery) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(RECORDING_COLUMN_IMG, img);
-        contentValues.put(RECORDING_COLUMN_lat, lat);
-        contentValues.put(RECORDING_COLUMN_LON, lon);
+        contentValues.put(RECORDING_COLUMN_lat, lat.toString());
+        contentValues.put(RECORDING_COLUMN_LON, lon.toString());
         contentValues.put(RECORDING_COLUMN_BATTERY, battery);
         db.insert(RECORDING_TABLE_NAME, null, contentValues);
+
         return true;
     }
 }

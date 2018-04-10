@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import security.com.rac.elinet.elinetsecurity.Util.Utility;
+import security.com.rac.elinet.elinetsecurity.db.EsnDBHelper;
 
 import static android.content.Context.BATTERY_SERVICE;
 
@@ -20,13 +21,16 @@ public class ElientLocationListener implements LocationListener {
     private Context context;
 
     public ElientLocationListener(Context context) {
+
         this.context = context;
     }
 
     @Override
     public void onLocationChanged(Location location) {
+        EsnDBHelper db = new EsnDBHelper(context);
         Integer battery = Utility.getCurrentBattery(context);
-        Log.e(TAG, "onLocationChanged: " + location + " ; " + battery.toString());
+        db.insertRecording(null, location.getLatitude(), location.getLongitude(), battery.toString());
+        Log.e(TAG, "onLocationChanged: " + location);
     }
 
     @Override

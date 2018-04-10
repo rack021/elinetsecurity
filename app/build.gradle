@@ -39,5 +39,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.8.5'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.5'
     compile 'info.vividcode:date-format-iso8601:1.0.0'
+    compile 'com.facebook.stetho:stetho:1.5.0'
 }
 apply plugin: 'com.android.application'

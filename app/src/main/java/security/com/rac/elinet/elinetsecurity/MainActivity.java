@@ -11,11 +11,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
 import com.pixplicity.easyprefs.library.Prefs;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import security.com.rac.elinet.elinetsecurity.Util.Setup;
 import security.com.rac.elinet.elinetsecurity.camera.CameraFragment;
 import security.com.rac.elinet.elinetsecurity.db.EsnDBHelper;
 import security.com.rac.elinet.elinetsecurity.location.LocationServices;
@@ -29,25 +31,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Stetho.initializeWithDefaults(this);
         setContentView(R.layout.activity_main);
         db = new EsnDBHelper(getApplicationContext());
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         String server_token = Prefs.getString("server_token", null);
         checkAndRequestPermissions();
-
+        new Setup(this);
         if (savedInstanceState == null) {
             if (server_token == null) {
+                new Setup(this);
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new LoginFragment(), "ss")
+                        .add(R.id.container, new LoginFragment(), "LOGIN_FRAGMENT")
                         .commit();
             } else {
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new CameraFragment(), "ss")
+                        .add(R.id.container, new CameraFragment(), "CAMERA_FRAGMENT")
                         .commit();
+                startService(new Intent(this, LocationServices.class));
             }
-
         }
-//        startService(new Intent(this, LocationServices.class));
+
     }
 
     @Override

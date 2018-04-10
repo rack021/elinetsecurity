@@ -7,6 +7,8 @@ import android.location.LocationManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import security.com.rac.elinet.elinetsecurity.camera.CameraClickThread;
+
 /**
  * Created by rac on 5/28/17.
  */
@@ -21,12 +23,19 @@ public class LocationServices extends Service {
     @Override
     public void onCreate() {
         try {
+
             mLocationListener = new ElientLocationListener(this);
             initializeLocationManager();
             mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
-                    LOCATION_INTERVAL,
-                    LOCATION_DISTANCE,
+                    0,
+                    0,
+                    mLocationListener
+            );
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.PASSIVE_PROVIDER,
+                    0,
+                    0,
                     mLocationListener
             );
         } catch (java.lang.SecurityException ex) {
@@ -41,6 +50,13 @@ public class LocationServices extends Service {
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e(TAG, "onStartCommand");
+        super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
 
